@@ -3,12 +3,12 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "http_accept_language"
+    gem.name = "panmind-http_accept_language"
     gem.summary = %Q{Parse the HTTP Accept Language Header}
     gem.description = %Q{Find out which locale the user preferes by reading the languages they specified in their browser}
-    gem.email = "iain@iain.nl"
-    gem.homepage = "http://github.com/iain/http_accept_language"
-    gem.authors = ["Iain Hecker"]
+    gem.email = "marcello.barnaba@gmail.com"
+    gem.homepage = "http://github.com/Panmind/http_accept_language"
+    gem.authors = ["Iain Hecker", "Marcello Barnaba"]
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
