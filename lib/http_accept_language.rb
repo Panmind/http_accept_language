@@ -23,10 +23,26 @@ module HttpAcceptLanguage
     []
   end
 
+  # Returns a sorted array of language codes symbols based on user's
+  # browser preference sent via the Accept-Language HTTP header.
+  #
+  # Example:
+  #
+  #   Accept-Language: en;q=0.3, nl-NL, nl-be;q=0.9, en-US;q=0.5
+  #
+  #   request.user_preferred_languages
+  #   # => [ :nl, :en ]
+  #
+  def user_preferred_language_codes
+    @user_preferred_language_codes ||=
+      strip_region_from user_preferred_languages
+  end
+
   # Sets the user languages preference, overiding the browser
   #
   def user_preferred_languages=(languages)
     @user_preferred_languages = languages
+    @user_preferred_language_codes = nil
   end
 
   # Finds the locale specifically requested by the browser.
@@ -40,22 +56,26 @@ module HttpAcceptLanguage
     (user_preferred_languages & array.collect { |i| i.to_s }).first
   end
 
-  # Returns the first of the user_preferred_languages that is compatible
-  # with the available locales. Ignores region.
+  # Returns the first of the user_preferred_languages that
+  # is included into the given array, ignoring region.
+  #
+  # Useful with Rails' I18n.available_locales.
   #
   # Example:
   #
-  #   request.compatible_language_from I18n.available_locales
+  #   Accept-Language: en;q=0.3, nl-NL, nl-be;q=0.9, en-US;q=0.5
   #
-  def compatible_language_from(available_languages)
-    user_preferred_languages.map do |x| #en-US
-      available_languages.find do |y| # en
-        y = y.to_s
-        x == y || x.split('-', 2).first == y.split('-', 2).first
-      end
-    end.compact.first
+  #   request.compatible_language_from [:nl, :it]
+  #   # => 'nl'
+  #
+  def compatible_language_from(array)
+    (user_preferred_language_codes & strip_region_from(array)).first
   end
 
+  private
+    def strip_region_from(languages)
+      languages.map {|l| l.to_s.sub(/-\w{2}/, '')}.uniq
+    end
 end
 if defined?(ActionDispatch::Request)
   ActionDispatch::Request.send :include, HttpAcceptLanguage
