@@ -45,15 +45,18 @@ module HttpAcceptLanguage
     @user_preferred_language_codes = nil
   end
 
-  # Finds the locale specifically requested by the browser.
+  # Returns a preferred language from an array containing
+  # language codes with regions.
   #
   # Example:
   #
-  #   request.preferred_language_from I18n.available_locales
+  #   Accept-Language: en;q=0.3, nl-NL, nl-be;q=0.9, en-US;q=0.5
+  #
+  #   request.preferred_language_from %w( it fr nl nl-NL )
   #   # => 'nl'
   #
   def preferred_language_from(array)
-    (user_preferred_languages & array.collect { |i| i.to_s }).first
+    (user_preferred_languages & array.map(&:to_s)).first
   end
 
   # Returns the first of the user_preferred_languages that
