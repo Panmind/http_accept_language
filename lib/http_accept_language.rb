@@ -1,23 +1,24 @@
 module HttpAcceptLanguage
 
-  # Returns a sorted array based on user preference in HTTP_ACCEPT_LANGUAGE.
-  # Browsers send this HTTP header, so don't think this is holy.
+  # Returns a sorted array based on user preference in sent via
+  # the Accept-Language HTTP header. Don't think this is holy!
+  #
+  # Returns an empty array if the header does not contain any
+  # parsable language code.
   #
   # Example:
+  #
+  #   Accept-Language: en;q=0.3, nl-NL, nl-be;q=0.9, en-US;q=0.5
   #
   #   request.user_preferred_languages
   #   # => [ 'nl-NL', 'nl-BE', 'nl', 'en-US', 'en' ]
   #
   def user_preferred_languages
-    @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE'].split(/\s*,\s*/).collect do |l|
-      l += ';q=1.0' unless l =~ /;q=\d+\.\d+$/
-      l.split(';q=')
-    end.sort do |x,y|
-      raise "Not correctly formatted" unless x.first =~ /^[a-z\-]+$/i
-      y.last.to_f <=> x.last.to_f
-    end.collect do |l|
-      l.first.downcase.gsub(/-[a-z]+$/i) { |x| x.upcase }
-    end
+    @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE']
+      .scan(/\b([a-z]{2}(?:-[a-z]{2})?)(?:;q=([01](?:\.\d)?))?\s*($|,)/)
+      .sort_by {|l, pref| 1 - (pref || 1).to_f}
+      .map! {|l,| l.downcase.sub(/-\w{2}/) { $&.upcase } }
+
   rescue # Just rescue anything if the browser messed up badly.
     []
   end
