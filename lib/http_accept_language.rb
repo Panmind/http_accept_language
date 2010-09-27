@@ -80,10 +80,14 @@ module HttpAcceptLanguage
       languages.map {|l| l.to_s.sub(/-\w{2}/, '')}.uniq
     end
 end
-if defined?(ActionDispatch::Request)
-  ActionDispatch::Request.send :include, HttpAcceptLanguage
-elsif defined?(ActionDispatch::AbstractRequest)
-  ActionDispatch::AbstractRequest.send :include, HttpAcceptLanguage
-elsif defined?(ActionDispatch::CgiRequest)
-  ActionDispatch::CgiRequest.send :include, HttpAcceptLanguage
+
+# ActionDispatch is for Rails >= 3, Action Controller for Rails < 3
+# Only the first class that matches gets the module included.
+if defined? Rails
+  base = defined?(ActionDispatch) ? ActionDispatch : ActionController
+  [:Request, :AbstractRequest, :CgiRequest].each do |c|
+    next unless base.const_defined?(c)
+    base.const_get(c).instance_eval { include HttpAcceptLanguage }
+    break
+  end
 end
