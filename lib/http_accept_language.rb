@@ -14,15 +14,15 @@ module HttpAcceptLanguage
   #   # => [ 'nl-NL', 'nl-BE', 'nl', 'en-US', 'en' ]
   #
   def user_preferred_languages
-    @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE']
-      .scan(/\b([a-z]{2}(?:-[a-z]{2})?)(?:;q=([01](?:\.\d)?))?\s*($|,)/)
-      .sort_by {|l, pref| 1 - (pref || 1).to_f}
-      .map! {|l,| l.downcase.sub(/-\w{2}/) { $&.upcase } }
-
-  rescue # Just rescue anything if the browser messed up badly.
-    []
+    begin
+      @user_preferred_languages ||= env['HTTP_ACCEPT_LANGUAGE'].
+      scan(/\b([a-z]{2}(?:-[a-z]{2})?)(?:;q=([01](?:\.\d)?))?\s*($|,)/).
+      sort_by {|l, pref| 1 - (pref || 1).to_f}.
+      map! {|l,| l.downcase.sub(/-\w{2}/) { $&.upcase } }
+    rescue # Just rescue anything if the browser messed up badly.
+      []
+    end
   end
-
   # Returns a sorted array of language codes symbols based on user's
   # browser preference sent via the Accept-Language HTTP header.
   #
